@@ -1,97 +1,84 @@
 @echo off
 cd /d "%~dp0"
+title ocs-AI-bridge
 
 echo ============================================
 echo   ocs-AI-bridge
 echo ============================================
 echo.
 
-REM -- 环境检测 --
-echo === 环境检测 ===
+REM Find Python
+set PYTHON=
+where python >nul 2>&1 && set PYTHON=python
+where py >nul 2>&1 && set PYTHON=py -3
+if "%PYTHON%"=="" (
+    echo [FAIL] Python not found. Install Python and add to PATH.
+    pause
+    exit /b 1
+)
+echo [ OK ] Python
 
 REM .env
-if exist ".env" (
-    python -c "import os; from dotenv import load_dotenv; load_dotenv(); k=os.getenv('DEEPSEEK_API_KEY',''); exit(0 if k and len(k)>10 else 1)" >nul 2>&1
-    if errorlevel 1 (
-        echo [WARN] .env 存在但 API key 无效
-        goto :ask_key
-    ) else (
-        echo [ OK ] .env + API key
-    )
-) else (
-    echo [WARN] 未找到 .env
-    goto :ask_key
-)
-goto :after_key
+if not exist ".env" goto ask_key
+%PYTHON% -c "import os; from dotenv import load_dotenv; load_dotenv(); k=os.getenv('DEEPSEEK_API_KEY',''); exit(0 if k and len(k)>10 else 1)" >nul 2>&1
+if errorlevel 1 goto ask_key
+echo [ OK ] API key
+goto after_key
 
 :ask_key
 echo.
-echo 请粘贴你的 API Key（Ctrl+V 然后回车）：
-echo 示例：sk-your-key-here
-set /p USER_KEY="> "
-if not "%USER_KEY%"=="" (
-    echo DEEPSEEK_API_KEY=%USER_KEY%> .env
-    echo [ OK ] API key 已保存
+echo Paste your API key (right-click or Ctrl+V, then Enter):
+echo Example: sk-your-key-here
+set /p K="> "
+if not "%K%"=="" (
+    echo DEEPSEEK_API_KEY=%K%> .env
+    echo [ OK ] API key saved
 ) else (
-    echo [WARN] 未输入 key，服务器可启动但无法答题
+    echo [WARN] No key entered
 )
 echo.
 :after_key
 
-REM 证书
+REM Certs - auto generate if missing
+if exist "cert.pem" if exist "key.pem" goto certs_ok
+echo [INFO] Generating HTTPS cert...
+%PYTHON% -c "from cryptography import x509;from cryptography.x509.oid import NameOID;from cryptography.hazmat.primitives import hashes,serialization;from cryptography.hazmat.primitives.asymmetric import rsa;import datetime,ipaddress;key=rsa.generate_private_key(public_exponent=65537,key_size=2048);subj=x509.Name([x509.NameAttribute(NameOID.COMMON_NAME,'localhost')]);cert=x509.CertificateBuilder().subject_name(subj).issuer_name(subj).public_key(key.public_key()).serial_number(1000).not_valid_before(datetime.datetime.utcnow()).not_valid_after(datetime.datetime.utcnow()+datetime.timedelta(days=365)).add_extension(x509.SubjectAlternativeName([x509.DNSName('localhost'),x509.IPAddress(ipaddress.IPv4Address('127.0.0.1'))]),critical=False).sign(key,hashes.SHA256());open('cert.pem','wb').write(cert.public_bytes(serialization.Encoding.PEM));open('key.pem','wb').write(key.private_bytes(serialization.Encoding.PEM,serialization.PrivateFormat.TraditionalOpenSSL,serialization.NoEncryption()));print('done')" >nul 2>&1
+:certs_ok
+
 if exist "cert.pem" if exist "key.pem" (
-    echo [ OK ] HTTPS 证书
+    echo [ OK ] HTTPS certs
+    certutil -user -addstore Root cert.pem >nul 2>&1
+    if not errorlevel 1 echo [ OK ] Cert trusted by system
 ) else (
-    echo [WARN] 缺少 HTTPS 证书，将使用 HTTP 模式。按 README 生成证书可启用 HTTPS
+    echo [WARN] pyOpenSSL missing. Run: pip install pyOpenSSL
 )
 
-REM Python
-python --version >nul 2>&1
+REM Core deps
+%PYTHON% -c "import starlette, uvicorn" >nul 2>&1
 if errorlevel 1 (
-    echo [FAIL] 找不到 Python，请先安装 Python
-    pause & exit /b 1
-) else (
-    echo [ OK ] Python
+    echo [FAIL] Dependencies missing. Run: pip install -r requirements.txt
+    pause
+    exit /b 1
 )
-
-REM pyOpenSSL
-python -c "import OpenSSL" >nul 2>&1
-if errorlevel 1 (
-    echo [WARN] pyOpenSSL 未安装 - 运行: pip install pyOpenSSL
-) else (
-    echo [ OK ] pyOpenSSL
-)
-
-REM 核心依赖
-python -c "import starlette, uvicorn" >nul 2>&1
-if errorlevel 1 (
-    echo [FAIL] 依赖缺失 - 请运行: pip install -r requirements.txt
-    pause & exit /b 1
-) else (
-    echo [ OK ] 核心依赖
-)
+echo [ OK ] Core deps
 
 REM MinerU
-python -c "import mineru" >nul 2>&1
+%PYTHON% -c "import mineru" >nul 2>&1
 if errorlevel 1 (
-    echo [INFO] MinerU 未安装 - 图片OCR不可用。可选: pip install mineru[core]
+    echo [INFO] MinerU not installed - image OCR disabled
 ) else (
     echo [ OK ] MinerU OCR
 )
 
 echo.
-echo === 启动服务器 ===
+echo === Starting server ===
 echo.
 
-REM 关闭旧进程
+REM Kill old processes
 for /f "tokens=5" %%a in ('netstat -ano ^| findstr ":8865.*LISTENING" 2^>nul') do (
-    echo 关闭端口 8865 旧进程 (PID: %%a)
     taskkill /PID %%a /F 2>nul
 )
-for /f "tokens=5" %%a in ('netstat -ano ^| findstr ":8888.*LISTENING" 2^>nul') do (
-    taskkill /PID %%a /F 2>nul
-)
-timeout /t 2 /nobreak >nul
+timeout /t 1 /nobreak >nul
 
-python ocs_server.py
+%PYTHON% ocs_server.py
 pause
