@@ -50,17 +50,20 @@ if exist "cert.pem" if exist "key.pem" (
     certutil -user -addstore Root cert.pem >nul 2>&1
     if not errorlevel 1 echo [ OK ] Cert trusted by system
 ) else (
-    echo [WARN] pyOpenSSL missing. Run: pip install pyOpenSSL
+    pip install pyOpenSSL cryptography >nul 2>&1 && echo [ OK ] pyOpenSSL installed || echo [WARN] pyOpenSSL install failed
 )
 
 REM Core deps
 %PYTHON% -c "import starlette, uvicorn" >nul 2>&1
 if errorlevel 1 (
-    echo [FAIL] Dependencies missing. Run: pip install -r requirements.txt
-    pause
-    exit /b 1
-)
-echo [ OK ] Core deps
+    echo [INFO] Installing dependencies...
+    pip install -r requirements.txt
+    if errorlevel 1 (
+        echo [FAIL] pip install failed. Try manually: pip install -r requirements.txt
+        pause
+        exit /b 1
+    )
+    echo [ OK ] Dependencies installed
 
 REM MinerU
 %PYTHON% -c "import mineru" >nul 2>&1
