@@ -660,9 +660,11 @@ async def save_config(request):
         os.environ["DEEPSEEK_API_KEY"] = k
         os.environ["DEEPSEEK_BASE_URL"] = u
         os.environ["DEEPSEEK_MODEL"] = m
-        global DEEPSEEK_MODEL, DEEPSEEK_BASE_URL
+        global DEEPSEEK_MODEL, DEEPSEEK_BASE_URL, DEEPSEEK_API_KEY, ai
         DEEPSEEK_MODEL = m
         DEEPSEEK_BASE_URL = u
+        DEEPSEEK_API_KEY = k
+        ai = None  # 重置客户端，下次使用新 key
         if v:
             os.environ["VISION_MODEL"] = v
             global VISION_MODEL
@@ -808,8 +810,8 @@ if __name__ == "__main__":
         print(f"  https://localhost:{BRIDGE_PORT}/adapter-service/search", file=sys.stderr)
         # 自动信任证书
         try:
-            subprocess.run(["certutil", "-user", "-addstore", "Root", cert_file],
-                          capture_output=True, check=True, shell=True)
+            subprocess.run(["certutil", "-f", "-user", "-addstore", "Root", cert_file],
+                          capture_output=True)
             print(f"  Cert trusted by system", file=sys.stderr)
         except Exception:
             pass
