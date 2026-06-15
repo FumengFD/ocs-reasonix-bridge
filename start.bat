@@ -50,14 +50,14 @@ if exist "cert.pem" if exist "key.pem" (
     certutil -user -addstore Root cert.pem >nul 2>&1
     if not errorlevel 1 echo [ OK ] Cert trusted by system
 ) else (
-    pip install pyOpenSSL cryptography >nul 2>&1 && echo [ OK ] pyOpenSSL installed || echo [WARN] pyOpenSSL install failed
+    %PYTHON% -m pip install pyOpenSSL cryptography >nul 2>&1 && echo [ OK ] pyOpenSSL installed || echo [WARN] pyOpenSSL install failed
 )
 
 REM Core deps
 %PYTHON% -c "import starlette, uvicorn" >nul 2>&1
 if errorlevel 1 (
     echo [INFO] Installing dependencies...
-    pip install -r requirements.txt
+    %PYTHON% -m pip install -r requirements.txt
     if errorlevel 1 (
         echo [FAIL] pip install failed. Try manually: pip install -r requirements.txt
         pause
