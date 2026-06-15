@@ -749,7 +749,7 @@ CONFIG_HOME = '<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8"><title
 '<h1>OCS-AI-Server</h1>' + \
 '<h2>配置完成！在 OCS 中粘贴以下 JSON：</h2>' + \
 '<div class="ok">当前模型：<strong>' + DEEPSEEK_MODEL + '</strong></div>' + \
-'<pre>[{ "name": "OCS-AI", "url": "https://127.0.0.1:8865/search", "method": "post", "type": "fetch", "contentType": "json", "data": { "question": "${title}", "options": "${options}", "type": "${type}" }, "handler": "return (res)=>res.answer.allAnswer.map(i=>([res.question,i.join(\'#\')]))" }]</pre>' + \
+'<pre>[{ "name": "OCS-AI", "url": "https://localhost:8865/search", "method": "post", "type": "GM_xmlhttpRequest", "contentType": "json", "data": { "question": "${title}", "options": "${options}", "type": "${type}" }, "handler": "return (res)=>res.answer.allAnswer.map(i=>([res.question,i.join(\'#\')]))" }]</pre>' + \
 '<div class="step">1. 安装 <a href="https://docs.ocsjs.com/docs/script" target="_blank">ScriptCat + OCS 脚本</a></div>' + \
 '<div class="step">2. OCS 面板 → 通用 → 全局设置 → 题库配置 → 粘贴上方 JSON</div>' + \
 '<div class="step">3. 解析器选 <strong>默认</strong> → 保存 → 进入答题页面</div>' + \
