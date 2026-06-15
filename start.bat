@@ -7,12 +7,25 @@ echo   ocs-AI-bridge
 echo ============================================
 echo.
 
-REM Find Python
+REM Find Python (skip Windows Store stub)
 set PYTHON=
-where python >nul 2>&1 && set PYTHON=python
-where py >nul 2>&1 && set PYTHON=py -3
+for %%p in (
+    "%LOCALAPPDATA%\Programs\Python\Python313\python.exe"
+    "%LOCALAPPDATA%\Programs\Python\Python312\python.exe"
+    "%LOCALAPPDATA%\Programs\Python\Python311\python.exe"
+    "%LOCALAPPDATA%\Programs\Python\Python310\python.exe"
+    "%ProgramFiles%\Python313\python.exe"
+    "%ProgramFiles%\Python312\python.exe"
+    "%ProgramFiles%\Python311\python.exe"
+) do if exist "%%~p" set PYTHON=%%~p
 if "%PYTHON%"=="" (
-    echo [FAIL] Python not found. Install Python and add to PATH.
+    where py >nul 2>&1 && set PYTHON=py -3
+)
+if "%PYTHON%"=="" (
+    where python >nul 2>&1 && python --version >nul 2>&1 && set PYTHON=python
+)
+if "%PYTHON%"=="" (
+    echo [FAIL] Python not found. Download from python.org
     pause
     exit /b 1
 )
