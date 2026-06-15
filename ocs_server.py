@@ -669,27 +669,6 @@ async def save_config(request):
             os.environ["VISION_MODEL"] = v
             global VISION_MODEL
             VISION_MODEL = v
-        # 生成证书（如没有）
-        if not os.path.exists("cert.pem") or not os.path.exists("key.pem"):
-            try:
-                from cryptography import x509; from cryptography.x509.oid import NameOID
-                from cryptography.hazmat.primitives import hashes, serialization
-                from cryptography.hazmat.primitives.asymmetric import rsa
-                import datetime, ipaddress
-                key = rsa.generate_private_key(65537, 2048)
-                subj = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "localhost")])
-                cert = (x509.CertificateBuilder().subject_name(subj).issuer_name(subj)
-                    .public_key(key.public_key()).serial_number(1000)
-                    .not_valid_before(datetime.datetime.utcnow())
-                    .not_valid_after(datetime.datetime.utcnow() + datetime.timedelta(days=365))
-                    .add_extension(x509.SubjectAlternativeName([
-                        x509.DNSName("localhost"),
-                        x509.IPAddress(ipaddress.IPv4Address("127.0.0.1"))]), critical=False)
-                    .sign(key, hashes.SHA256()))
-                with open("cert.pem", "wb") as f: f.write(cert.public_bytes(serialization.Encoding.PEM))
-                with open("key.pem", "wb") as f: f.write(key.private_bytes(serialization.Encoding.PEM, serialization.PrivateFormat.TraditionalOpenSSL, serialization.NoEncryption()))
-                subprocess.run(["certutil", "-user", "-addstore", "Root", "cert.pem"], capture_output=True, shell=True)
-            except Exception: pass
         return JSONResponse({"ok": True})
     except Exception as e:
         return JSONResponse({"ok": False, "error": str(e)})
@@ -797,7 +776,7 @@ if __name__ == "__main__":
         import time
         time.sleep(3)
         try:
-            webbrowser.open("http://127.0.0.1:" + os.getenv("BRIDGE_PORT", "8865") + "/")
+            webbrowser.open(f"{proto}://127.0.0.1:{port}/")
         except Exception:
             pass
     threading.Thread(target=_open_browser, daemon=True).start()
@@ -811,7 +790,7 @@ if __name__ == "__main__":
         cert_dir = _os.path.dirname(_os.path.abspath(__file__))
     cert_file = _os.path.join(cert_dir, "cert.pem")
     key_file = _os.path.join(cert_dir, "key.pem")
-    use_ssl = _os.path.exists(cert_file) and _os.path.exists(key_file)
+    use_ssl = False  # HTTP only, no cert needed
 
     print(f"OCS Bridge HTTP Server", file=sys.stderr)
     if use_ssl:
