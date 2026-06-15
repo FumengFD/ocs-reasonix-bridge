@@ -747,6 +747,13 @@ if __name__ == "__main__":
     if use_ssl:
         print(f"  https://localhost:{BRIDGE_PORT}/health", file=sys.stderr)
         print(f"  https://localhost:{BRIDGE_PORT}/adapter-service/search", file=sys.stderr)
+        # 自动信任证书
+        try:
+            subprocess.run(["certutil", "-user", "-addstore", "Root", cert_file],
+                          capture_output=True, check=True, shell=True)
+            print(f"  Cert trusted by system", file=sys.stderr)
+        except Exception:
+            pass
     else:
         print(f"  http://localhost:{BRIDGE_PORT}/health", file=sys.stderr)
         print(f"  http://localhost:{BRIDGE_PORT}/adapter-service/search", file=sys.stderr)
