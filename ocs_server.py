@@ -700,7 +700,7 @@ async def api_status(request):
         "uptime": round(time.time() - stats["start_time"]),
     })
 
-CONFIG_PAGE = '<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8"><title>ocs-AI-bridge</title>' + \
+CONFIG_PAGE = '<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8"><title>OCS-AI-Server</title>' + \
 '<style>*{margin:0;padding:0}body{font-family:sans-serif;background:#f5f5f5;padding:20px;' + \
 'max-width:600px;margin:0 auto}.card{background:#fff;border-radius:8px;padding:24px;margin-top:16px}' + \
 'h1{font-size:20px;margin:0}h2{font-size:14px;color:#666;font-weight:400}' + \
