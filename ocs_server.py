@@ -791,13 +791,12 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 
 
 if __name__ == "__main__":
-    # 首次运行打开浏览器配置
-    if not os.path.exists(".env") or not os.getenv("DEEPSEEK_API_KEY", ""):
-        import webbrowser
-        try:
-            webbrowser.open("http://127.0.0.1:" + os.getenv("BRIDGE_PORT", "8865") + "/")
-        except Exception:
-            pass
+    # 每次启动打开浏览器
+    import webbrowser
+    try:
+        webbrowser.open("http://127.0.0.1:" + os.getenv("BRIDGE_PORT", "8865") + "/")
+    except Exception:
+        pass
 
     import os as _os
     import sys as _sys
