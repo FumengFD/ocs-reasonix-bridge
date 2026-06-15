@@ -2,13 +2,12 @@
 
 双击 `ocs-server.exe`，浏览器自动弹出配置页面——选 AI 模型、粘贴 API Key、保存。然后把 OCS JSON 配置复制到 OCS 题库配置，进入答题页面即可自动答题。
 
-**不需要 Python，不需要命令行，不需要手动改文件。**
 
 ## 支持的题型
 
 - 单选题 / 多选题 / 判断题
 - 填空题 / 连线题
-- 图片题（MinerU OCR 提取公式和文字）
+- 图片题（MinerU OCR 提取公式和文字/多模态模型直接识别）
 
 ## 支持的 AI 模型
 
@@ -16,17 +15,10 @@ Web 配置页面可选全部 9 款模型：
 
 DeepSeek V4 Flash/Pro · GPT-4o · Qwen-Plus/Max · Groq Llama 3.3 · Moonshot V1 · GLM-4-Flash/Plus
 
-多模态模型自动跳过 MinerU，图片直接发给 AI 看。
+多模态模型自动跳过 MinerU。
 
 ## 使用
 
-**有 Python 环境：**
-```bash
-pip install -r requirements.txt
-python ocs_server.py
-```
-
-**没有 Python（推荐）：**
 下载 [Release](https://github.com/FumengFD/OCS-AI-Server/releases) 里的 `ocs-server.exe`，双击运行。
 
 然后：
