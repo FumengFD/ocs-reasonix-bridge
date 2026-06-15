@@ -30,7 +30,7 @@ if "%PYTHON%"=="" (
     where winget >nul 2>&1 || goto no_python
 )
 echo [INFO] Installing Python via winget...
-winget install -e --id Python.Python.3.11 --silent
+winget install -e --id Python.Python.3.11 --silent --accept-package-agreements --accept-source-agreements
 if errorlevel 1 goto no_python
 echo [ OK ] Python installed via winget
 REM Re-detect Python path (winget doesn't update PATH)
