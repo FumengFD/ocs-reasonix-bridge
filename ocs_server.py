@@ -740,7 +740,27 @@ def interactive_setup():
         except Exception:
             print("[WARN] Cert generation failed, server will use HTTP")
 
-    print("\n[ OK ] Setup complete! Starting server...\n")
+    # 打开浏览器
+    import webbrowser
+    print()
+    print("Opening browser for setup...")
+    print("  Step 1: Install ScriptCat (userscript manager)")
+    print("  Step 2: Install OCS script")
+    print("  Step 3: Trust HTTPS cert")
+
+    try:
+        webbrowser.open("https://docs.ocsjs.com/docs/script")
+        webbrowser.open("https://docs.ocsjs.com")
+        webbrowser.open(f"http{'s' if os.path.exists('cert.pem') else ''}://localhost:{BRIDGE_PORT}/health")
+    except Exception:
+        print("  Could not open browser automatically.")
+        print(f"  Manual: Open https://localhost:{BRIDGE_PORT}/health in browser")
+
+    print()
+    print("In OCS settings, configure:")
+    print("  JSON config -> paste from README")
+    print()
+    print("[ OK ] Setup complete! Starting server...\n")
 
 if __name__ == "__main__":
     # 首次运行交互配置
